@@ -1,0 +1,92 @@
+#!/bin/bash
+# Support create opensaf cluster
+# There're 2 ways of buidling opensaf:
+# - On the host 
+#   + 'make -j2; make -j2 install DESTDIR=$(pwd)/tmp/rootfs'
+#   + Dockerfile: 'ADD tmp/rootfs /'
+# - On the container
+#    + Make volume of opensaf-repo: '-v /home/vudao/workspace/opensaf-code/:/home/opensaf'
+#    + Compile code and 'make install'
+
+WORKSPACE=$(readlink -e `dirname $0`)
+DESTDIR="$WORKSPACE/tmp/rootfs"
+REPO=$WORKSPACE/opensaf-code
+IMAGENAME="opensaf-cluster"
+flag="TRUE"
+count=1
+
+function set_up_workspace
+{
+    rm -rf $WORKSPACE/tmp
+    rm -f $WORKSPACE/Dockerfile
+    mkdir -p $DESTDIR
+}
+
+function step
+{
+    echo "Step ${count}: $@"
+    count=$((count+1))
+}
+
+function clone_opensaf_repo
+{
+    if [ ! -d $REPO ]; then
+        step "Clone opensaf repo"
+        git clone -b develop git://git.code.sf.net/p/opensaf/code opensaf-code
+    fi
+}
+
+function update_dockerfile {
+    step "Update Dockerfile"
+    cp $WORKSPACE/Dockerfile.temp $WORKSPACE/Dockerfile
+}
+
+function build_opensaf
+{
+    step "Build opensaf"
+    cd opensaf-code
+    git clean -fxd
+    ./bootstrap.sh
+    ./configure CFLAGS="-DRUNASROOT -g -O2" --enable-python --disable-ais-evt \
+    --disable-ais-lck --disable-ais-msg --enable-tests --disable-tipc
+    make -j2
+    make -j2 install DESTDIR=$DESTDIR
+}
+
+function usage {
+    USAGE="Build opensaf and image of cluster\n
+\t [-n | --notmake Not build opensaf\n
+\t [-h | --help Print usage
+    "
+    echo -e "$USAGE"
+}
+
+function getoption {
+    TEMP=`getopt -o r:nh --long repo:,notmake,help \
+        -- "$@"`
+
+    eval set -- $TEMP
+    while true; do
+        case "$1" in
+            -n | --notmake) flag=FALSE; shift 1;;
+            -r | --repo) REPO=$2; shift 2;;
+            -h | --help) usage; exit 0;;
+            --) shift; break;;
+            *) echo "Internal error"; exit 1;;
+        esac
+    done
+}
+
+main() {
+        set_up_workspace
+        getoption $@
+        if [ "$flag" == "TRUE" ]; then
+            clone_opensaf_repo
+            build_opensaf
+        fi
+        update_dockerfile
+        step "Build image $IMAGENAME"
+        cd $WORKSPACE; docker build --rm -t $IMAGENAME --network host -f Dockerfile .
+}
+
+main $@

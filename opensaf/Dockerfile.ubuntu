@@ -1,0 +1,21 @@
+FROM ubuntu:18.04
+
+MAINTAINER Vu Dao <vu.m.dao@gmail.com>
+
+RUN apt update && \
+    # For building opensaf
+    apt install -y gcc g++ libxml2-dev automake m4 autoconf libtool pkg-config make python-dev libsqlite3-dev binutils && \
+    # For creating cluster
+    apt install -y apt-utils bash-completion python python-yaml && \
+    apt install -y graphviz && \
+    apt install -y curl libxml2-utils && \
+    apt install -y rpm python-crypto python-paramiko && \
+    apt install -y python-rpm desktop-file-utils && \
+    apt install -y vim wget && \
+    apt install -y net-tools && \
+    apt install -y sudo systemd kmod && \
+    apt install -y openssh-server rsyslog inetutils-ping && \
+    apt-get autoremove -y && \
+    apt clean all
+
+CMD ["/bin/bash"]

@@ -1,0 +1,18 @@
+FROM opensaf/ubuntu:18.04
+
+ADD  tmp/rootfs /
+ADD  scripts / 
+
+RUN  groupadd opensaf && \
+     useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
+     echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
+     echo 'Defaults:%opensaf !requiretty' >> /etc/sudoers && \
+     echo 'Defaults:opensaf !requiretty' >> /etc/sudoers && \
+     chown opensaf:opensaf /var/lib/opensaf && \
+     chown opensaf:opensaf /var/run/opensaf && \
+     chown -R opensaf:opensaf /var/log/opensaf && \
+     chown -R opensaf:opensaf /etc/opensaf
+
+ENV container docker
+
+CMD ["/sbin/init"]

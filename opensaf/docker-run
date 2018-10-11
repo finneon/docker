@@ -1,0 +1,35 @@
+#!/bin/bash
+usage() {
+    USAGE="$0 Usage:\n
+\t Create opensaf node\n
+\t [-n] Name of container\n
+\t [-H] Hostname of node\n
+\t [-w] workspace of sharedfs\n
+\t [-h] Usage
+    "
+    echo -e "$USAGE"
+}
+
+[ $# -eq 0 ] && usage && exit 0
+
+while getopts ":n:H:w:h" OPT; do
+    case $OPT in
+        n) 
+            NAME=$OPTARG
+            ;;
+        H)
+            HOST=$OPTARG
+            ;;
+        w)
+            WORKSPACE=$OPTARG
+            ;;
+        h)
+            usage; exit 0
+            ;;
+        *)
+            echo "Internal error"; exit 1
+            ;;
+    esac
+done
+
+docker run -d --name $NAME -h $HOST --privileged -v $WORKSPACE/tmp/sharedfs:/etc/opensaf/sharedfs -it opensaf-cluster /sbin/init

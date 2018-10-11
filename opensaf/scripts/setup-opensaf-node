@@ -1,0 +1,65 @@
+#!/bin/bash
+# Setup node_type, node_name
+# immnd.conf: PBE and rootdir
+# dtmd.conf: DTM IP
+
+function config_immnd {
+    if [ -f /etc/opensaf/immnd.conf.bk ]; then
+        return
+    fi
+    # Create backup immnd.conf as the flag file
+    cp /etc/opensaf/immnd.conf /etc/opensaf/immnd.conf.bk
+
+    # Enable sqlite3 db configuration in immnd.conf
+    sed -e 's/#export IMMSV_PBE_FILE=imm.db/export IMMSV_PBE_FILE=imm.db/' -i /etc/opensaf/immnd.conf
+
+    # Exposed sharefs dir of imm in immnd.conf
+    sed s/^export.IMMSV_ROOT_DIRECTORY=.*/"export IMMSV_ROOT_DIRECTORY=\/etc\/opensaf\/sharedfs\/imm"/ -i /etc/opensaf/immnd.conf
+    sed s/^export.IMMSV_MAX_WAIT=.*/"export IMMSV_MAX_WAIT=0"/ -i /etc/opensaf/immnd.conf
+}
+
+function update_node_dtmd {
+    # Update node_type and node_name
+    hostname > /etc/opensaf/node_name
+    type=`hostname | cut -d "-" -f 1`
+    if [ "$type" == "SC" ]; then
+        echo "controller" > /etc/opensaf/node_type
+    else
+        echo "payload" > /etc/opensaf/node_type
+    fi
+
+    # Update DTM_NODE_IP in dtmd.conf for TCP mode
+    ip=$(ifconfig eth0 | grep inet | sed 's/^[ \t]*//' | cut -d' ' -f2)
+    sed "s/DTM_NODE_IP=.*/DTM_NODE_IP=${ip}/" -i /etc/opensaf/dtmd.conf
+}
+
+function generate_immxml {
+    # Generate imm.xml for first time
+    if [ ! -f /etc/opensaf/sharedfs/imm/imm.xml ];then
+        mkdir -p /etc/opensaf/sharedfs/imm
+        cd /usr/local/share/opensaf/immxml
+        rm -f imm.xml.*
+        ./immxml-clustersize -s 2 -p 2
+        ./immxml-configure
+        cp imm.xml.* /etc/opensaf/sharedfs/imm/imm.xml
+        # Enable Persistent Backend
+        sed '/safRdn=immManagement,safApp=safImmService/,/<\/attr>/ { s/2/1/g; }' -i /etc/opensaf/sharedfs/imm/imm.xml
+    fi
+}
+
+function set_opensaf_user {
+    # Make sure permissions are set for non root
+    chown opensaf:opensaf /var/lib/opensaf
+    chown opensaf:opensaf /var/run/opensaf
+    chown -R opensaf:opensaf /var/log/opensaf
+    chown -R opensaf:opensaf /etc/opensaf
+}
+
+main() {
+    config_immnd
+    update_node_dtmd
+    generate_immxml
+    set_opensaf_user
+}
+
+main
