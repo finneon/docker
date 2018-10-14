@@ -4,12 +4,13 @@
 # dtmd.conf: DTM IP
 
 function config_immnd {
-    if [ -f /etc/opensaf/immnd.conf.bk ]; then
-        return
+    if [ -f /etc/opensaf/.setup-opensaf-node ]; then
+        echo "EXIT"
+	return
     fi
-    # Create backup immnd.conf as the flag file
-    cp /etc/opensaf/immnd.conf /etc/opensaf/immnd.conf.bk
 
+    # Create flag file to done here
+    touch /etc/opensaf/.setup-opensaf-node
     # Enable sqlite3 db configuration in immnd.conf
     sed -e 's/#export IMMSV_PBE_FILE=imm.db/export IMMSV_PBE_FILE=imm.db/' -i /etc/opensaf/immnd.conf
 
@@ -49,17 +50,37 @@ function generate_immxml {
 
 function set_opensaf_user {
     # Make sure permissions are set for non root
+    cat /etc/passwd | grep opensaf > /dev/null
+    if [ $? -ne 0 ]; then
+        groupadd opensaf && \
+        useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
+        echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
+        echo 'Defaults:%opensaf !requiretty' >> /etc/sudoers && \
+        echo 'Defaults:opensaf !requiretty' >> /etc/sudoers
+    fi
     chown opensaf:opensaf /var/lib/opensaf
     chown opensaf:opensaf /var/run/opensaf
     chown -R opensaf:opensaf /var/log/opensaf
     chown -R opensaf:opensaf /etc/opensaf
 }
 
+function enable_opensafd {
+    # Enable automatic start of opensaf via systemd next time container is started
+    systemctl enable opensafd
+
+    # Configure dynamic linker run-time bindings
+    # see http://man7.org/linux/man-pages/man8/ldconfig.8.html
+    ldconfig
+}
+
 main() {
-    config_immnd
     update_node_dtmd
+    if [ $(config_immnd) == "EXIT" ]; then
+        exit 0
+    fi
     generate_immxml
     set_opensaf_user
+    enable_opensafd
 }
 
 main

@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Default cluster-size 4 nodes
+# TODO: Support scaling nodes
+
+USAGE="Start cluster\n
+\t [-s|--size Size of cluster\n
+\t [-w|--workspace Workspace of sharedfs\n
+\t [-h|--help Usage\n
+"
+
+function usage {
+    echo -e $USAGE
+}
+
+function start_cluster {
+    num=1
+    while true; do
+        if [ $num -gt 2 ] && [ $num -le $size ]; then
+	    ./docker-run -n pl${num} -H PL-${size} -w $WS
+	    sleep 3
+            docker exec -it pl${num} systemctl start opensafd
+        elif [ $num -le 2 ]; then
+            ./docker-run -n sc${num} -H SC-${num} -w $WS
+	    sleep 3
+	    docker exec -it sc${num} systemctl start opensafd
+	else
+            exit
+        fi
+        num=$((num+1))   
+    done
+}
+
+function get_option {
+    TEMP=`getopt -o s:w:h --long size:,workspace:,help \
+        -- "$@"`
+    eval set -- $TEMP
+    while true; do
+        case $1 in
+            -s|--size) size=$2; shift 2;;
+	    -w|--workspace) WS=$2; shift 2;;
+	    -h|--help) usage && exit; shift 1;;
+	    --) shift; break;;
+	    *) usage && exit;;
+	esac
+    done
+}
+
+main() {
+    if [ $# -ne 4 ]; then
+        echo -e "Missing arguements\n"
+        usage && exit
+    fi
+    get_option $@
+    start_cluster
+}
+
+main $@

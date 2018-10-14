@@ -1,9 +1,15 @@
 FROM opensaf/ubuntu:18.04
 
-ADD  tmp/rootfs /
-ADD  scripts / 
+MAINTAINER Vu Dao <vu.m.dao@gmail.com>
 
-RUN  groupadd opensaf && \
+# Add opensaf binaries
+ADD  rootfs /
+
+# Add support script to start-up opensaf
+ADD  to-add/setup-opensaf-node /
+
+RUN  cp /setup-opensaf-node /usr/local/bin; chmod +x  /usr/local/bin/setup-opensaf-node && \
+     groupadd opensaf && \
      useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
      echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
      echo 'Defaults:%opensaf !requiretty' >> /etc/sudoers && \
@@ -11,7 +17,10 @@ RUN  groupadd opensaf && \
      chown opensaf:opensaf /var/lib/opensaf && \
      chown opensaf:opensaf /var/run/opensaf && \
      chown -R opensaf:opensaf /var/log/opensaf && \
-     chown -R opensaf:opensaf /etc/opensaf
+     chown -R opensaf:opensaf /etc/opensaf && \
+     chown -R opensaf:opensaf /usr/local/bin/setup-opensaf-node && \
+     sed '/\. \/lib\/lsb\/init-functions/ a\\/usr\/local\/bin\/setup-opensaf-node' -i /etc/init.d/opensafd && \
+     echo "root:rootroot" | chpasswd
 
 ENV container docker
 

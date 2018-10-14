@@ -1,7 +1,6 @@
 #!/bin/bash
 usage() {
-    USAGE="$0 Usage:\n
-\t Create opensaf node\n
+    USAGE="Usage: Create opensaf node container\n
 \t [-n] Name of container\n
 \t [-H] Hostname of node\n
 \t [-w] workspace of sharedfs\n
@@ -32,4 +31,7 @@ while getopts ":n:H:w:h" OPT; do
     esac
 done
 
-docker run -d --name $NAME -h $HOST --privileged -v $WORKSPACE/tmp/sharedfs:/etc/opensaf/sharedfs -it opensaf-cluster /sbin/init
+if [ ! -d $WORKSPACE/sharedfs ]; then
+    mkdir $WORKSPACE/sharedfs
+fi
+docker run -d --name $NAME -h $HOST --privileged -v /sys/fs/cgroup:/sys/fs/cgroup -v $WORKSPACE/sharedfs:/etc/opensaf/sharedfs -it opensaf-cluster /sbin/init
