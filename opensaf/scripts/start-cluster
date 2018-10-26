@@ -14,20 +14,23 @@ function usage {
 }
 
 function start_cluster {
+    # Clean sharedfs
+    rm -rf $WS/sharedfs
+
     num=1
     while true; do
         if [ $num -gt 2 ] && [ $num -le $size ]; then
-	    ./docker-run -n pl${num} -H PL-${size} -w $WS
-	    sleep 3
+            ./docker-run -n pl${num} -H PL-${num} -w $WS
+            sleep 3
             docker exec -it pl${num} systemctl start opensafd
         elif [ $num -le 2 ]; then
             ./docker-run -n sc${num} -H SC-${num} -w $WS
-	    sleep 3
-	    docker exec -it sc${num} systemctl start opensafd
-	else
+            sleep 3
+            docker exec -it sc${num} systemctl start opensafd
+        else
             exit
         fi
-        num=$((num+1))   
+        num=$((num+1))
     done
 }
 
@@ -38,11 +41,11 @@ function get_option {
     while true; do
         case $1 in
             -s|--size) size=$2; shift 2;;
-	    -w|--workspace) WS=$2; shift 2;;
-	    -h|--help) usage && exit; shift 1;;
-	    --) shift; break;;
-	    *) usage && exit;;
-	esac
+            -w|--workspace) WS=$2; shift 2;;
+            -h|--help) usage && exit; shift 1;;
+            --) shift; break;;
+            *) usage && exit;;
+        esac
     done
 }
 

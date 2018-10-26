@@ -86,8 +86,8 @@ function getoption {
 }
 
 main() {
-        set_up_workspace
         getoption $@
+        set_up_workspace
         if [ "$flag" == "TRUE" ]; then
             clone_opensaf_repo
             build_opensaf
