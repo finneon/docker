@@ -14,7 +14,8 @@
 # This script supports the first way
 # TODO: The second one
 
-WORKSPACE=$(readlink -e `dirname $0`)
+# WORKSPACE is ~/docker/opensaf
+WORKSPACE=$(pwd)
 DESTDIR="$WORKSPACE/rootfs"
 REPO=$WORKSPACE/opensaf-code
 IMAGENAME="opensaf-cluster"
@@ -43,9 +44,37 @@ function clone_opensaf_repo
     fi
 }
 
-function update_dockerfile {
-    step "Update Dockerfile"
-    cp $WORKSPACE/Dockerfile.temp $WORKSPACE/Dockerfile
+function create_dockerfile {
+    step "Create Dockerfile"
+    cat > $WORKSPACE/Dockerfile <<EOF
+FROM opensaf/ubuntu:latest
+
+MAINTAINER Vu Dao <vu.m.dao@gmail.com>
+
+# Add opensaf binaries
+ADD  rootfs /
+
+# Add support script to start-up opensaf
+ADD  to-add/setup-opensaf-node /
+
+RUN  cp /setup-opensaf-node /usr/local/bin; chmod +x  /usr/local/bin/setup-opensaf-node && \
+     groupadd opensaf && \
+     useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
+     echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
+     echo 'Defaults:%opensaf !requiretty' >> /etc/sudoers && \
+     echo 'Defaults:opensaf !requiretty' >> /etc/sudoers && \
+     chown opensaf:opensaf /var/lib/opensaf && \
+     chown opensaf:opensaf /var/run/opensaf && \
+     chown -R opensaf:opensaf /var/log/opensaf && \
+     chown -R opensaf:opensaf /etc/opensaf && \
+     chown -R opensaf:opensaf /usr/local/bin/setup-opensaf-node && \
+     sed '/\. \/lib\/lsb\/init-functions/ a\\/usr\/local\/bin\/setup-opensaf-node' -i /etc/init.d/opensafd && \
+     echo "root:rootroot" | chpasswd
+
+ENV container docker
+
+CMD ["/sbin/init"]
+EOF
 }
 
 function build_opensaf
@@ -91,10 +120,12 @@ main() {
         if [ "$flag" == "TRUE" ]; then
             clone_opensaf_repo
             build_opensaf
+        else
+            cd $REPO; make -j2 install DESTDIR=$DESTDIR
         fi
-        update_dockerfile
+        create_dockerfile
         step "Build image $IMAGENAME"
-        cd $WORKSPACE; docker build --rm -t $IMAGENAME --network host -f Dockerfile .
+        cd $WORKSPACE; docker build --rm -t $IMAGENAME --network host -f $WORKSPACE/Dockerfile .
 }
 
 main $@
