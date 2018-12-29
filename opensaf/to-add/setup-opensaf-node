@@ -30,7 +30,7 @@ function update_node_dtmd {
     fi
 
     # Update DTM_NODE_IP in dtmd.conf for TCP mode
-    ip=$(ifconfig eth0 | grep inet | sed 's/^[ \t]*//' | cut -d' ' -f2)
+    ip=$(ifconfig eth0 | grep -w inet | sed 's/^[ \t]*//' | cut -d' ' -f2)
     sed "s/DTM_NODE_IP=.*/DTM_NODE_IP=${ip}/" -i /etc/opensaf/dtmd.conf
 }
 
@@ -75,7 +75,7 @@ function enable_opensafd {
 
 main() {
     update_node_dtmd
-    if [ $(config_immnd) == "EXIT" ]; then
+    if [ "$(config_immnd)" == "EXIT" ]; then
         exit 0
     fi
     generate_immxml

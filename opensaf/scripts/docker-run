@@ -33,5 +33,6 @@ done
 
 if [ ! -d $WORKSPACE/sharedfs ]; then
     mkdir $WORKSPACE/sharedfs
+    chmod -R 755 $WORKSPACE/sharedfs
 fi
-docker run -d --name $NAME -h $HOST --privileged -v /sys/fs/cgroup:/sys/fs/cgroup -v $WORKSPACE/sharedfs:/etc/opensaf/sharedfs -it opensaf-cluster /sbin/init
+docker run -d --name $NAME -h $HOST --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v $WORKSPACE/sharedfs:/etc/opensaf/sharedfs -it opensaf-cluster /sbin/init
