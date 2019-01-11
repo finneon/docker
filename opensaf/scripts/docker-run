@@ -32,6 +32,7 @@ while getopts ":n:H:w:h" OPT; do
 done
 
 if [ ! -d $WORKSPACE/sharedfs ]; then
+    # Do not delete this folder, it just creates a node
     mkdir $WORKSPACE/sharedfs
     chmod -R 755 $WORKSPACE/sharedfs
 fi
