@@ -1,0 +1,38 @@
+#!/bin/bash
+# Scale-out cluster opensaf
+
+USAGE="Usage: $0 \n\
+\t      [-s|--size Number of nodes to be scale-out\n\
+\t      [-w|--workspace Workspace of cluster\n\
+\t 		[-h|--help\n\
+\n Scale-out cluster opensaf\n
+"
+usage() { echo -e $USAGE; exit 0; }
+
+[ $# -ne 4 ] && usage
+
+while getopts ":s:w:h" OPTION; do
+    case "${OPTION}" in
+    s)
+        NUMBER_NODE=$OPTARG
+        ;;
+    w)
+        WORKSPACE=$OPTARG
+        ;;
+    *)
+        usage
+        ;;
+    esac
+done
+
+# Get current payload size
+size=$(docker ps -a | grep opensaf-cluster | grep "pl.*" | wc -l)
+
+for (( i=1 ; i<=$NUMBER_NODE ; i++ )); do
+    id=$((i+size))
+    name="pl$id"
+    hostname="PL-$id"
+    ./docker-run -n $name -H $hostname -w $WORKSPACE
+    # Start opensafd
+    docker exec -it $name systemctl start opensafd
+done

@@ -57,7 +57,13 @@ ADD  rootfs /
 # Add support script to start-up opensaf
 ADD  to-add/setup-opensaf-node /
 
-RUN  cp /setup-opensaf-node /usr/local/bin; chmod +x  /usr/local/bin/setup-opensaf-node && \
+# Add scale-out script
+ADD  to-add/opensaf_scale_out /
+ADD  to-add/scale-out-opensaf.py /
+
+RUN  cp /setup-opensaf-node /usr/local/bin; chmod +x /usr/local/bin/setup-opensaf-node && \
+     cp /opensaf_scale_out /usr/local/lib/opensaf/opensaf_scale_out && \
+     cp /scale-out-opensaf.py /usr/local/lib/opensaf/ && \
      groupadd opensaf && \
      useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
      echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
@@ -68,7 +74,9 @@ RUN  cp /setup-opensaf-node /usr/local/bin; chmod +x  /usr/local/bin/setup-opens
      chown -R opensaf:opensaf /var/log/opensaf && \
      chown -R opensaf:opensaf /etc/opensaf && \
      chown -R opensaf:opensaf /usr/local/bin/setup-opensaf-node && \
+     chown -R opensaf:opensaf /usr/local/lib/opensaf/opensaf_scale_out && \
      sed '/\. \/lib\/lsb\/init-functions/ a\\/usr\/local\/bin\/setup-opensaf-node' -i /etc/init.d/opensafd && \
+     sed -i 's/#export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=0/export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=1/' /etc/opensaf/nid.conf && \
      echo "root:rootroot" | chpasswd
 
 ENV container docker
