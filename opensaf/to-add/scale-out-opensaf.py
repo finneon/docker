@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """ Add IMM configuration for new nodes join the cluster
     Overwritten from https://sourceforge.net/projects/opensaf/
+    at opensaf-code/python/samples/scale_opensaf
 """
 
 from __future__ import print_function
@@ -155,7 +156,7 @@ def prepare_for_write(objects):
 
 
 def find_node_groups(amf_node):
-    """ fetch all node groups a node belongs to """
+    """ Fetch all node groups a node belongs to """
     matching_groups = []
     _iter = inst_iter('SaAmfNodeGroup')
     _iter.init()
@@ -234,7 +235,7 @@ def split_rdn_and_parent(immobj):
     if re.search("\\\\", immobj.new_dn) and re.search("safC.*Type=", immobj.new_dn):
         parent = immobj.new_dn.split(',', 2)[-1]
         rdn = re.sub(",{0}".format(parent), "", immobj.new_dn)
-    return rdn, parent
+        return rdn, parent
 
 
 def scale_out(new_hostname, from_hostname):
@@ -260,16 +261,12 @@ def scale_out(new_hostname, from_hostname):
     new_amfnode_dn = from_amfnode_dn.replace(from_hostname, new_hostname)
     objects = collect_scalable_immobjects(from_amfnode_dn, from_clmnode_dn)
     conf_objects = prepare_for_write(objects)
-    # nodegroups_to_join = find_node_groups(from_amfnode_dn)
 
     suffix = str(time.time())
     for immobj in conf_objects:
         modify_immobject(immobj, suffix, new_amfnode_dn, new_hostname)
 
     objs = list()
-    # Limit the scale-out objects to what we can scale-in for now.
-    # objects not scaled out: comps, comps_cs, swbundles, hchks, csiattrs
-    # allowed_objs = ['SaAmfNode', 'SaClmNode', 'SaAmfSU', 'SaAmfSI', 'SaAmfCSI']
     allowed_objs = ['SaAmfNode', 'SaClmNode', 'SaAmfSU', 'SaAmfSI', 'SaAmfCSI', 'SaAmfComp',
                     'SaAmfCompCsType', 'SaAmfNodeSwBundle', 'SaAmfHealthcheck', 'SaAmfCSIAttribute']
     for obj in conf_objects:
@@ -285,7 +282,16 @@ def scale_out(new_hostname, from_hostname):
         print_object(immobj, immobj.new_dn)
         del immobj.attrs['new_dn']
         ccb.create(immobj, parent)
+
+    nodegroups_to_join = find_node_groups(from_amfnode_dn)
+    for ngr in nodegroups_to_join:
+        ccb.modify_value_add(ngr.dn, "saAmfNGNodeList", new_amfnode_dn)
     ccb.apply()
+
+    print("-Unlock-in/unlock %s" % new_amfnode_dn)
+    subprocess.call(['amf-adm', 'unlock-in', new_amfnode_dn])
+    subprocess.call(['amf-adm', 'unlock', new_amfnode_dn])
+
     print('-Scaling out done')
 
 

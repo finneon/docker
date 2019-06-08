@@ -1,0 +1,7 @@
+#!/bin/sh
+# To add to container image.
+# This scripts is called by CLM Admin Operation as an IMM callback.
+# Source: https://sourceforge.net/p/opensaf
+
+logger -t $0 "Stop opensafd"
+systemctl stop opensafd

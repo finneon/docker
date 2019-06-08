@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Create opensaf-cluster image which contains opensaf bin/lib and
-# support scripts to start opensafd
+# support scripts to start opensafd, scale-out and scale-in nodes
 #
 # There're 2 ways of buidling opensaf:
 # - On the host: Make install and then add the rootfs to the image
@@ -13,6 +13,10 @@
 #
 # This script supports the first way
 # TODO: The second one
+#
+# Notes: For the first way, this script compile and install opensaf source code on the host,
+#        the python version of the host and container image must be aligned so that pyOsaf
+#        works well eg. /usr/local/lib/python2.7/dist-packages/pyosaf
 
 # WORKSPACE is ~/docker/opensaf
 WORKSPACE=$(pwd)
@@ -54,16 +58,18 @@ MAINTAINER Vu Dao <vu.m.dao@gmail.com>
 # Add opensaf binaries
 ADD  rootfs /
 
-# Add support script to start-up opensaf
-ADD  to-add/setup-opensaf-node /
+# Add support script to start-up opensaf and scale-out scripts
+ADD  to-add/setup-opensaf-node /usr/local/bin/setup-opensaf-node
+ADD  to-add/opensaf_scale_out /usr/local/lib/opensaf/opensaf_scale_out
+ADD  to-add/scale-in-opensaf.py /usr/local/lib/opensaf/scale-in-opensaf.py
+ADD  to-add/scale-out-opensaf.py /usr/local/lib/opensaf/scale-out-opensaf.py
+ADD  to-add/osafclm_stop /usr/local/lib/opensaf/clm-scripts/osafclm_stop
 
-# Add scale-out script
-ADD  to-add/opensaf_scale_out /
-ADD  to-add/scale-out-opensaf.py /
-
-RUN  cp /setup-opensaf-node /usr/local/bin; chmod +x /usr/local/bin/setup-opensaf-node && \
-     cp /opensaf_scale_out /usr/local/lib/opensaf/opensaf_scale_out && \
-     cp /scale-out-opensaf.py /usr/local/lib/opensaf/ && \
+RUN  chmod +x /usr/local/bin/setup-opensaf-node && \
+     chmod +x /usr/local/lib/opensaf/opensaf_scale_out && \
+     chmod +x /usr/local/lib/opensaf/scale-out-opensaf.py && \
+     chmod +x /usr/local/lib/opensaf/scale-in-opensaf.py && \
+     chmod +x /usr/local/lib/opensaf/clm-scripts/osafclm_stop && \
      groupadd opensaf && \
      useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
      echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
