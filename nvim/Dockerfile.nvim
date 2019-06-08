@@ -1,0 +1,46 @@
+FROM ubuntu:18.04
+
+# Add user and group
+RUN groupadd -f -g ${gid} ${group} && \
+    groupadd -f localsudoers && \
+    echo '%localsudoers ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    useradd -g ${gid} -G localsudoers -u ${uid} -m ${user}
+
+# Install necessary apps
+RUN apt update && \
+    apt install -y python-dev libsqlite3-dev binutils kmod fuse libfuse2 git ack-grep && \
+    apt install -y apt-utils bash-completion python python-yaml && \
+    apt install -y python3-pip && \
+    apt install -y graphviz && \
+    apt install -y curl libxml2-utils && \
+    apt install -y vim wget && \
+    apt install -y net-tools && \
+    apt install -y openssh-server rsyslog inetutils-ping && \
+    apt-get autoremove -y && \
+    apt clean all
+
+# Install pls neovim and neovim module
+RUN pip3 install --user python_language_server && \
+    pip3 install --user neovim && \
+    pip3 install --user pynvim && \
+    pip3 install jedi && \
+    pip3 install flake8 && \
+    pip3 install autopep8 && \
+    curl -fLo /usr/bin/nvim --create-dirs https://github.com/neovim/neovim/releases/download/v0.3.7/nvim.appimage && \
+    chmod 777 /usr/bin/nvim && \
+    mkdir -p /home/${user}/.config/nvim && \
+    curl -fLo /home/${user}/.config/nvim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2 && \
+    update-alternatives --set python /usr/bin/python3.6
+
+# Add init.vim config
+ADD to-add/init.vim /home/${user}/.config/nvim
+
+# Install Plugin in nvim
+RUN echo "nvim +PlugInstall +PlugUpdate +PlugUpgrade +qa" >> /home/${user}/.bashrc && \
+    chown -R ${user}:${user} /home/${user}/
+
+ENV container docker
+
+CMD ["/bin/bash"]

@@ -1,0 +1,30 @@
+#!/bin/bash
+# Create container with mounting the workspace and load nvim
+
+usage() {
+USAGE="Create nvim container with mounting workspace as input \n
+\t      [-w | --workspace Workspace to be mounted \n
+\t      [-h | --help Print usage\n
+"
+echo -e "$USAGE"
+exit 0
+}
+
+while getopts ":wh" OPTION; do
+    case ${OPTION} in
+    w)
+        WORKSPACE=$OPTARG
+        ;;
+    *)
+        usage
+        ;;
+    esac
+done
+
+if [ -z "$WORKSPACE" ]; then
+    WORKSPACE=$(pwd)
+fi
+
+IMAGENAME="ubuntu-nvim"
+
+docker run -it --user ${USER} --privileged -v $WORKSPACE:$WORKSPACE $IMAGENAME /bin/bash

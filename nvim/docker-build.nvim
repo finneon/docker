@@ -1,0 +1,25 @@
+#!/bin/bash
+# Build nvim docker image
+
+DIR=$(pwd)
+DOCKERFILE="$DIR/Dockerfile"
+IMAGENAME="ubuntu-nvim"
+
+# Create Dockerfile from template
+customizeUser() {
+    docker_file_template=$DIR/Dockerfile.nvim
+
+    export gid=$(id -g)
+    export group=$(id -g -n)
+    export uid=$(id -u)
+    export user=$(id -u -n)
+
+    envsubst < $docker_file_template > $DOCKERFILE
+}
+
+buildImage() {
+    docker build --rm -t $IMAGENAME --network host -f $DOCKERFILE .
+}
+
+customizeUser
+buildImage
