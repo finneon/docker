@@ -22,11 +22,9 @@ function start_cluster {
         if [ $num -gt 2 ] && [ $num -le $size ]; then
             ./docker-run -n pl${num} -H PL-${num} -w $WS
             sleep 3
-            docker exec -it pl${num} systemctl start opensafd
         elif [ $num -le 2 ]; then
             ./docker-run -n sc${num} -H SC-${num} -w $WS
             sleep 3
-            docker exec -it sc${num} systemctl start opensafd
         else
             exit
         fi

@@ -83,6 +83,7 @@ RUN  chmod +x /usr/local/bin/setup-opensaf-node && \
      chown -R opensaf:opensaf /usr/local/lib/opensaf/opensaf_scale_out && \
      sed '/\. \/lib\/lsb\/init-functions/ a\\/usr\/local\/bin\/setup-opensaf-node' -i /etc/init.d/opensafd && \
      sed -i 's/#export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=0/export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=1/' /etc/opensaf/nid.conf && \
+     ln -s /lib/systemd/system/opensafd.service /etc/systemd/system/multi-user.target.wants/opensafd.service && \
      echo "root:rootroot" | chpasswd
 
 ENV container docker

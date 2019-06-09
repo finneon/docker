@@ -34,6 +34,4 @@ for (( i=1 ; i<=$NUMBER_NODE ; i++ )); do
     name="pl$id"
     hostname="PL-$id"
     ./docker-run -n $name -H $hostname -w $WORKSPACE
-    # Start opensafd
-    docker exec -it $name systemctl start opensafd
 done
