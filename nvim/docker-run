@@ -1,13 +1,20 @@
 #!/bin/bash
 # Create container with mounting the workspace and load nvim
+# Remove the container when exiting
+
+trap "removeContainer" INT TERM EXIT
 
 usage() {
-USAGE="Create nvim container with mounting workspace as input \n
+    USAGE="Create nvim container with mounting workspace as input \n
 \t      [-w | --workspace Workspace to be mounted \n
 \t      [-h | --help Print usage\n
 "
-echo -e "$USAGE"
-exit 0
+    echo -e "$USAGE"
+    exit 0
+}
+
+removeContainer() {
+    docker rm -vf $containerId
 }
 
 while getopts ":wh" OPTION; do
@@ -25,6 +32,8 @@ if [ -z "$WORKSPACE" ]; then
     WORKSPACE=$(pwd)
 fi
 
-IMAGENAME="ubuntu-nvim"
+IMAGENAME="ubuntu-nvim-${USER}"
 
-docker run -it --user ${USER} --privileged -v $WORKSPACE:$WORKSPACE $IMAGENAME /bin/bash
+containerId=$(docker run --rm -d -it --user ${USER} --privileged -v $WORKSPACE:$WORKSPACE $IMAGENAME /bin/bash)
+
+docker exec -it $containerId nvim +NERDTree

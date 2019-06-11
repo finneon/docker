@@ -4,9 +4,18 @@
 DIR=$(pwd)
 DOCKERFILE="$DIR/Dockerfile"
 IMAGENAME="ubuntu-nvim"
+CONTAINERNAME="nvimCont"
+COUNT_STEP=1
+
+step_info() {
+    echo "Step $COUNT_STEP: $1"
+    echo -e "#################### \n"
+    COUNT_STEP=$((COUNT_STEP+1))
+}
 
 # Create Dockerfile from template
 customizeUser() {
+    step_info "Create Dockerfile from template"
     docker_file_template=$DIR/Dockerfile.nvim
 
     export gid=$(id -g)
@@ -18,8 +27,24 @@ customizeUser() {
 }
 
 buildImage() {
+    step_info "Build base image $IMAGENAME"
     docker build --rm -t $IMAGENAME --network host -f $DOCKERFILE .
+}
+
+firstStartContainer() {
+    step_info "First start the container to setup nvim"
+    docker rm -vf ${CONTAINERNAME} 2>/dev/null
+    docker run --rm -d -it --name ${CONTAINERNAME} --user ${USER} --privileged --network host ${IMAGENAME} /bin/bash
+    docker exec -it ${CONTAINERNAME} /home/${USER}/setup_nvim.sh
+}
+
+exportContainerToImage() {
+    step_info "Export container ${CONTAINERNAME} to image ${IMAGENAME}-${USER}"
+    docker export ${CONTAINERNAME} | docker import - ${IMAGENAME}-${USER}
+    docker rm -vf ${CONTAINERNAME}
 }
 
 customizeUser
 buildImage
+firstStartContainer
+exportContainerToImage
