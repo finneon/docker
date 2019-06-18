@@ -8,6 +8,9 @@ pip3 install --user pynvim
 pip3 install --user jedi
 pip3 install --user flake8
 pip3 install --user autopep8
+pip3 install --user editorconfig
+pip3 install --user pylint
+pip3 install --user bandit
 
 # Install nvim plugin
 USER=$(id -u -n)

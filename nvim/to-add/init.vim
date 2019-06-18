@@ -1,368 +1,400 @@
-function! DoRemote(arg)
-  UpdateRemotePlugins
-endfunction
-call plug#begin('~/.config/nvim/plugged')
-" looking
-  Plug 'mhinz/vim-startify'
-  Plug 'Yggdroot/indentLine'
-  Plug 'ryanoasis/vim-devicons'
-  Plug 'myusuf3/numbers.vim'
-  Plug 'chriskempson/base16-vim'
-  Plug 'vim-airline/vim-airline'
-  Plug 'vim-airline/vim-airline-themes'
-  Plug 'morhetz/gruvbox'
-  Plug 'airblade/vim-gitgutter'
-  Plug 'altercation/vim-colors-solarized'
-" syntax check
-  Plug 'w0rp/ale'
-" Autocomplete
-  Plug 'ncm2/ncm2'
-  Plug 'roxma/nvim-yarp'
-  Plug 'ncm2/ncm2-bufword'
-  Plug 'ncm2/ncm2-path'
-  Plug 'ncm2/ncm2-jedi'
-  Plug 'ncm2/ncm2-ultisnips'
-" Snippet support
-  Plug 'SirVer/ultisnips'
-" Formater
-  Plug 'Chiel92/vim-autoformat'
-" completion/templating
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-  Plug 'jiangmiao/auto-pairs'
-  Plug 'ervandew/supertab'
-  Plug 'tpope/vim-endwise'
-  Plug 'scrooloose/nerdcommenter'
-  Plug 'SirVer/ultisnips'
-  Plug 'honza/vim-snippets'
-" command extention
-  Plug 'easymotion/vim-easymotion'
-  Plug 'wellle/targets.vim'
-  Plug 'tpope/vim-surround'
-  Plug 'junegunn/vim-easy-align'
-  Plug 'wellle/targets.vim'
-  Plug 'terryma/vim-multiple-cursors'
-" utils
-  Plug 'neomake/neomake'
-  Plug 'sjl/gundo.vim'
-  Plug 'chrisbra/NrrwRgn'
-" misc
-  Plug 'asins/vimcdoc'
-  Plug 'CodeFalling/fcitx-vim-osx'
-  "Plug 'lilydjwg/fcitx.vim'
-  Plug 'junegunn/vim-github-dashboard'
-" documentation
-  Plug 'rhysd/nyaovim-markdown-preview'
-  Plug 'xolox/vim-notes'
-  Plug 'xolox/vim-misc'
-  Plug 'itchyny/calendar.vim'
-  Plug 'junegunn/vim-journal'
-" navigation
-  Plug 'scrooloose/nerdtree'
-  Plug 'ctrlpvim/ctrlp.vim'
-  Plug 'wesleyche/SrcExpl'
-  Plug 'majutsushi/tagbar'
-  Plug 'rizzatti/dash.vim'
-  Plug 'eugen0329/vim-esearch'
-" python
-  Plug 'zchee/deoplete-jedi'
-"  Plug 'ktvoelker/sbt-vim'
-"  Plug 'megaannum/vimside'
-call plug#end()
+""""""" The code to check and download Vim-Plug is found here:
+""""""" https://github.com/yous/dotfiles/blob/e6f1e71b6106f6953874c6b81f0753663f901578/vimrc#L30-L81
+if !empty(&rtp)
+    let s:vimfiles = split(&rtp, ',')[0]
+else
+    echohl ErrorMsg
+    echomsg 'Unable to determine runtime path for Vim.'
+    echohl NONE
+endif
 
-" Fundamental settings
-  set fileencoding=utf-8
-  set fileencodings=ucs-bom,utf-8,gbk,cp936,latin-1
-  set fileformat=unix
-  set fileformats=unix,dos,mac
-  filetype on
-  filetype plugin on
-  filetype plugin indent on
-  syntax on
-" Some useful settings
-  set smartindent
-  set expandtab         "tab to spaces
-  set tabstop=2         "the width of a tab
-  set shiftwidth=2      "the width for indent
-  set foldenable
-  set foldmethod=indent "folding by indent
-  set foldlevel=99
-  set ignorecase        "ignore the case when search texts
-  set smartcase         "if searching text contains uppercase case will not be ignored
-" Lookings
-  set number           "line number
-  set cursorline       "hilight the line of the cursor
-  set cursorcolumn     "hilight the column of the cursor
-  set nowrap           "no line wrapping
-  try
-      colorscheme gruvbox  "use the theme gruvbox
-  catch /^Vim\%((\a\+)\)\=:E185/
-      colorscheme default
-      set background=dark
-  endtry
-  set background=dark "use the light version of gruvbox
-  " change the color of chars over the width of 80 into blue
-  " (uncomment to enable it)
-  "au BufWinEnter * let w:m2=matchadd('Underlined', '\%>' . 80 . 'v.\+', -1)
-  let $NVIM_TUI_ENABLE_TRUE_COLOR=1
-
-let mapleader=";"
-
-" Shortcuts
-  " \\ => go to command mode
-    imap <leader><leader> <esc>:
-  " go => go to anywhere
-    nmap go <Plug>(easymotion-jumptoanywhere)
-  " <c-v> => for pasting
-    imap <c-v> <esc>"+pa
-  " <c-h/j/k/l> => hjkl in normal mode (but there is a bug mapping <c-h>)
-    imap <c-h> <left>
-    imap <c-j> <down>
-    imap <c-k> <up>
-    imap <c-l> <right>
-  " \cl => redraw the screen
-    nmap <leader>l <c-l><c-l>
-    imap <leader>l <esc><leader>la
-  " <space> => fold/unfold current code
-  " tips: zR => unfold all; zM => fold all
-    nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
-  " \o => open current file by system apps (only available in osx)
-    nmap <leader>o :!open "%"<cr>
-    imap <leader>o <esc><leader>o
-  " ,, => escape to normal mode
-    imap ,, <Esc>
-    tmap ,, <Esc>
-  " <esc> => go back to normal mode (in terminal mode)
-    tnoremap <Esc> <C-\><C-n> 
-  " <F4> => popup the file tree navigation)
-    nmap <F4> :NERDTreeToggle<CR>
-  " use t{h,j,k,l} to switch between different windows
-    noremap tk <c-w>k
-    noremap tj <c-w>j
-    noremap th <c-w>h
-    noremap tl <c-w>l
-		nmap twj :resize +5<cr>
-		nmap twk :resize -5<cr>
-		nmap twh :vertical resize -5<cr>
-		nmap twl :vertical resize +5<cr>
-  " t[number] => switch to the file showed in the top tabs
-  " t[ t] => prev tab/next tab
-    nmap t1 <Plug>AirlineSelectTab1
-    nmap t2 <Plug>AirlineSelectTab2
-    nmap t3 <Plug>AirlineSelectTab3
-    nmap t4 <Plug>AirlineSelectTab4
-    nmap t5 <Plug>AirlineSelectTab5
-    nmap t6 <Plug>AirlineSelectTab6
-    nmap t7 <Plug>AirlineSelectTab7
-    nmap t8 <Plug>AirlineSelectTab8
-    nmap t9 <Plug>AirlineSelectTab9
-    nmap t[ <Plug>AirlineSelectPrevTab
-    nmap t] <Plug>AirlineSelectNextTab
-  " ts => toggle the srcExpl (for source code exploring)
-    nnoremap ts :SrcExplToggle<CR>
-  " tg => toogle the gundo
-    nnoremap tg :GundoToggle<CR>
-  " tb => open the tagbar
-    nmap tb :TlistClose<CR>:TagbarToggle<CR>
-  " ti => taglist
-    nmap ti :TagbarClose<CR>:Tlist<CR>
-  " <s-enter> => toggle the terminal
-    if exists('nyaovim_version')
-      nnoremap <silent> <s-cr> :Ttoggle<cr>
-    else " in terminal use t<enter>
-      nmap t<CR> :Ttoggle<CR> 
+" Install vim-plug if it isn't installed and call plug#begin() out of box
+function! s:DownloadVimPlug()
+    if !exists('s:vimfiles')
+        return
     endif
-  " tt => type the command for the terminal
-    nnoremap tt :T<space>
-  " te => send current line/selected lines to the terminal
-    nnoremap <silent> te :TREPLSend<CR>
-    xnoremap <silent> te :TREPLSend<CR>
-  " tE => send the thole current file to the terminal
-    nnoremap <silent> tE :TREPLSendFile<CR>
-  " \t => goto normal mode and press t (e.g. \t<enter> to toggle the terminal)
-    imap <leader>t <esc>t
-  " tm => toggle the markdown preview
-    let g:markdown_preview_on = 0
-    au! BufWinEnter *.md,*.markdown,*.mdown let g:markdown_preview_on = g:markdown_preview_auto || g:markdown_preview_on  
-    au! BufWinLeave *.md,*.markdown,*.mdown let g:markdown_preview_on = !g:markdown_preview_auto && g:markdown_preview_on  
-    nmap tm @=(g:markdown_preview_on ? ':Stop' : ':Start')<CR>MarkdownPreview<CR>:let g:markdown_preview_on = 1 - g:markdown_preview_on<CR>
-  " \g => scroll to bottom in markdown preview (insert mode)
-    imap <leader>g <esc><leader>Ga
-  " \jd => GoTo the definition
-    "nnoremap <leader>jd :YcmCompleter GoTo<CR>
-  " \e => edit only current/selected line(s) in normal/visual mode
-  " z + [fFtTwWbBeE(ge)(gE)jknNs] => easy motion
-    map zf <Leader><Leader>f
-    map zF <Leader><Leader>F
-    map zt <Leader><Leader>t
-    map zT <Leader><Leader>T
-    map zw <Leader><Leader>w
-    map zW <Leader><Leader>W
-    map zb <Leader><Leader>b
-    map zB <Leader><Leader>B
-    map ze <Leader><Leader>e
-    map zE <Leader><Leader>E
-    map zge <Leader><Leader>ge
-    map zgE <Leader><Leader>gE
-    map zj <Leader><Leader>j
-    map zk <Leader><Leader>k
-    map zn <Leader><Leader>n
-    map zN <Leader><Leader>N
-    map zs <Leader><Leader>s
-  " zn => NrrwRgn in normal/visual mode
-    nmap zn :NR<CR>
-    xmap zn :NR<CR>
-  " zm => multipleCursor by regular expression
-    nnoremap zm :MultipleCursorsFind<space>
-    xnoremap zm :MultipleCursorsFind<space>
-    xmap zI zm^<cr>I
-    xmap zA zm$<cr>A
-
-" Plugin settings
-  " Airline
-    let g:airline#extensions#tabline#enabled = 1
-    let g:airline#extensions#tabline#buffer_idx_mode = 1
-    let g:airline_powerline_fonts = 1
-    if !exists('g:airline_symbols')
-      let g:airline_symbols = {}
+    if empty(glob(s:vimfiles . '/autoload/plug.vim'))
+        let plug_url = 'https://github.com/junegunn/vim-plug.git'
+        let tmp = tempname()
+        let new = tmp . '/plug.vim'
+        try
+            let out = system(printf('git clone --depth 1 %s %s', plug_url, tmp))
+            if v:shell_error
+                echohl ErrorMsg
+                echomsg 'Error downloading vim-plug: ' . out
+                echohl NONE
+                return
+            endif
+            if !isdirectory(s:vimfiles . '/autoload')
+                call mkdir(s:vimfiles . '/autoload', 'p')
+            endif
+            call rename(new, s:vimfiles . '/autoload/plug.vim')
+            " Install plugins at first
+            autocmd VimEnter * PlugInstall | quit
+        finally
+            if isdirectory(tmp)
+                let dir = '"' . escape(tmp, '"') . '"'
+                silent call system((has('win32') ? 'rmdir /S /Q ' : 'rm -rf ') . dir)
+            endif
+        endtry
     endif
-  " Deoplete
+    call plug#begin(s:vimfiles . '/plugged')
+    "" Asynchronous lint engine
+    " Enable autocomplete
+    let g:ale_completion_enabled = 1 | Plug 'w0rp/ale', {'branch': 'v2.4.x'}
+    "" Language server autocompletion with coc.nvim
+    " Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install()}}
+    "" More autocomplete
+    if has('nvim')
+      Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    else
+      Plug 'Shougo/deoplete.nvim'
+      Plug 'roxma/nvim-yarp'
+      Plug 'roxma/vim-hug-neovim-rpc'
+    endif
     let g:deoplete#enable_at_startup = 1
-    let g:deoplete#omni_patterns = {}
-    let g:deoplete#omni_patterns.scala = '[^. *\t]\.\w*\|: [A-Z]\w*'
-    let g:deoplete#sources#clang#libclang_path='/usr/local/opt/llvm/lib/libclang.3.6.dylib'
-    let g:deoplete#sources#clang#clang_header = '/usr/local/opt/llvm/lib/clang/3.6.2/include'
-    let g:deoplete#sources#clang#flags = [
-          \ '-isystem',
-          \ '/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1',
-          \ '-isystem',
-          \ '/usr/local/include',
-          \ '-isystem',
-          \ '/Library/Developer/CommandLineTools/usr/bin/../lib/clang/7.3.0/include',
-          \ '-isystem',
-          \ '/Library/Developer/CommandLineTools/usr/include',
-          \ '-isystem',
-          \ '/usr/include',
-          \ '-isystem',
-          \ '/System/Library/Frameworks',
-          \ '-isystem',
-          \ '/Library/Frameworks',
-          \ ]
-  " EasyAlign
-    xmap ga <Plug>(LiveEasyAlign)
-    nmap ga <Plug>(LiveEasyAlign)
-  " EasyMotion
-    hi EasyMotionTarget ctermfg=9 guifg=red
-    hi EasyMotionTarget2First ctermfg=9 guifg=red
-    hi EasyMotionTarget2Second ctermfg=9 guifg=lightred
-    hi link EasyMotionShade Comment
-  " Emmet
-    let g:user_emmet_leader_key = ',z'
-  " ESearch
-    let g:esearch = {
-      \ 'adapter':    'ack',
-      \ 'backend':    'nvim',
-      \ 'out':        'win',
-      \ 'batch_size': 1000,
-      \ 'use':        ['visual', 'hlsearch', 'last'],
-      \}
-  " IndentLine
-    let g:indentLine_color_gui = "#504945"
-  " Markdown_preview (a plugin in nyaovim)
-    let g:markdown_preview_eager = 1
-    let g:markdown_preview_auto = 1
-  " Multi_cursor
-    let g:multi_cursor_use_default_mapping=0
-    let g:multi_cursor_start_key='<c-n>'
-    let g:multi_cursor_next_key='<tab>'
-    let g:multi_cursor_prev_key='b'
-    let g:multi_cursor_skip_key='x'
-    let g:multi_cursor_quit_key='q'
-  " Neomake
-    let g:neomake_cpp_enabled_makers = ['clang']
-    let g:neomake_cpp_clang_args = ['-Wall', '-Wextra', '-std=c++11', '-o', '%:p:r']
-    let g:neomake_cpp_gcc_args = ['-Wall', '-Wextra', '-std=c++11', '-o', '%:p:r']
-    let g:neomake_scala_enabled_markers = ['fsc', 'scalastyle']
-    let g:neomake_scala_scalac_args = ['-Ystop-after:parser', '-Xexperimental']
-  " Neoterm
-    let g:neoterm_size=20
-    let g:neoterm_repl_command= 'zsh'
-    let g:neoterm_position = 'horizontal'
-    " toogle the terminal
-    " kills the current job (send a <c-c>)
-    nnoremap <silent> tc :call neoterm#kill()<cr>
-  " Notes
-    let g:notes_directories = ['~/Dev/notes-in-vim']
-  " Startify
-    command! -nargs=1 CD cd <args> | Startify
-    autocmd User Startified setlocal cursorline
-    let g:startify_enable_special         = 0
-    let g:startify_files_number           = 8
-    let g:startify_relative_path          = 1
-    let g:startify_change_to_dir          = 1
-    let g:startify_update_oldfiles        = 1
-    let g:startify_session_autoload       = 1
-    let g:startify_session_persistence    = 1
-    let g:startify_session_delete_buffers = 1
-    let g:startify_list_order = [
-      \ ['   LRU within this dir:'],
-      \ 'dir',
-      \ ['   LRU:'],
-      \ 'files',
-      \ ['   Sessions:'],
-      \ 'sessions',
-      \ ['   Bookmarks:'],
-      \ 'bookmarks',
-      \ ]
-    let g:startify_skiplist = [
-                \ 'COMMIT_EDITMSG',
-                \ 'plugged/.*/doc',
-                \ '/data/repo/neovim/runtime/doc',
-                \ '.vimrc',
-                \ 'nyaovimrc.html',
-                \ ]
-    let g:startify_bookmarks = [
-                \ { 'c': '~/.config/nvim/init.vim' },
-                \ ]
-    let g:startify_custom_footer =
-          \ ['', "   I like it!", '']
-    highlight StartifyFooter  ctermfg=240
-  " Supertab
-    let g:SuperTabMappingForward = '<s-tab>'
-    let g:SuperTabMappingBackward = '<tab>'
-  " Tagbar
-    let g:tagbar_width=30
-  " Taglist
-    let Tlist_Show_One_File=1
-    let Tlist_Exit_OnlyWindow=1
-    let Tlist_File_Fold_Auto_Close=1
-    let Tlist_WinWidth=30
-    let Tlist_Use_Right_Window=1
-  " UltiSnip
-  " <tab> => expand the snippets
-    let g:UltiSnipsExpandTrigger = '<tab>'
-  " <ctrl-d> => list available snippets start with the chars before the cursor
-    let g:UltiSnipsListSnippets = '<c-d>'
-  " <enter> => go to the next placeholder
-    let g:UltiSnipsJumpForwardTrigger = '<enter>'
-  " <shift-enter> => go to the previous placeholder
-    if exists('g:nyaovim_version')
-      let g:UltiSnipsJumpBackwardTrigger = '<s-enter>'
-    else "as <shift-enter> can't be handled in terminal, use <ctrl-k> instead
-      let g:UltiSnipsJumpBackwardTrigger = '<c-k>'
-    endif
+    " Function argument completion
+    Plug 'Shougo/neosnippet'
+    Plug 'Shougo/neosnippet-snippets'
+    let g:neosnippet#enable_completed_snippet = 1
+    "" Fuzzy finder
+    Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<plug>(GrepperOperator)']}
+    "" Add surrounding brackets, quotes, xml tags,...
+    Plug 'tpope/vim-surround'
+    "" Extended matching for the % operator
+    Plug 'adelarsq/vim-matchit'
+    " Auto-completion for pairs
+    Plug 'Raimondi/delimitMate'
+    "" Edit a region in new buffer
+    Plug 'chrisbra/NrrwRgn'
+    "" Tree explorer
+    " Plug 'scrooloose/nerdtree', {'on': ['NERDTreeToggle', 'NERDTreeFind']} | Plug 'Xuyuanp/nerdtree-git-plugin' | Plug 'ryanoasis/vim-devicons'
+    Plug 'scrooloose/nerdtree', {'on': ['NERDTreeToggle', 'NERDTreeFind']} | Plug 'Xuyuanp/nerdtree-git-plugin'
+    "" Tag tree
+    Plug 'majutsushi/tagbar'
+    "" Run shell command asynchronously
+    Plug 'skywind3000/asyncrun.vim'
+    "" Text object per indent level
+    Plug 'michaeljsmith/vim-indent-object'
+    "" Code commenting
+    Plug 'tpope/vim-commentary'
+    "" Git gutter
+    Plug 'airblade/vim-gitgutter'
+    "" Git wrapper
+    Plug 'tpope/vim-fugitive'
+    "" Git management inside vim
+    Plug 'jreybert/vimagit'
+    "" Automatically toggle relative line number
+    Plug 'jeffkreeftmeijer/vim-numbertoggle'
+    "" Use registers as stack for yank and delete
+    Plug 'maxbrunsfeld/vim-yankstack'
+    "" Status line
+    Plug 'itchyny/lightline.vim'
+    "" Show buffer in tabline
+    "Plug 'mgee/lightline-bufferline'
+    "" Delete buffers without messing window layout
+    Plug 'moll/vim-bbye'
+    "" Show lint errors and warnings on status line
+    Plug 'maximbaz/lightline-ale'
+    "" Maintain coding style per project
+    Plug 'editorconfig/editorconfig-vim'
+    "" Language specific plugins
+    " Python
+    Plug 'nvie/vim-flake8', {'for': 'python'}
+    Plug 'davidhalter/jedi-vim', {'for': 'python'}
+    "" Detect file encoding
+    Plug 's3rvac/AutoFenc'
+    "" Indent line
+    Plug 'Yggdroot/indentLine'
+    "" Start screen
+    Plug 'mhinz/vim-startify'
+    "" Theme
+    Plug 'morhetz/gruvbox'
+    "Plug 'ayu-theme/ayu-vim'
+    call plug#end()
+endfunction
 
-" Automatics
-  function! ToStartify()
-    if winnr("$") == 1 && buffer_name(winbufnr(winnr())) != ""
-      vs
-      Startify
-      exec "normal \<c-w>w"
+call s:DownloadVimPlug()
+
+"""" Theme section
+syntax enable
+syntax on
+"" GruvBox
+highlight Normal ctermbg=black ctermfg=white
+let g:gruvbox_italic=1
+let g:gruvbox_contrast_dark = 'hard'
+let g:gruvbox_invert_tabline = 1
+let g:gruvbox_invert_indent_guides=1
+"" Ayu
+let ayucolor="dark"
+try
+    colorscheme gruvbox  "use the theme gruvbox
+catch /^Vim\%((\a\+)\)\=:E185/
+    colorscheme default
+    set background=dark
+endtry
+
+"""" End theme section
+
+"""" Misc section
+if has('gui_running')
+    set t_Co=256
+    " set guioptions-=m  "remove menu bar
+    set guioptions-=T   "remove toolbar
+    set guioptions-=r   "remove right-hand scroll bar
+    set guioptions-=L   "remove left-hand scroll bar
+    set guioptions-=e   "Use tabline from configs instead of GUI
+endif
+set hidden
+set cmdheight=2
+"set encoding=utf-8
+set mouse=a
+"set guifont=Iosevka\ Nerd\ Font\ Mono:h13
+" set smartcase
+set smartindent
+set confirm
+set autoread
+set number
+set relativenumber
+set cursorline
+set scrolloff=10
+set wrap
+set colorcolumn=80,100,120,140,160,180,200
+set binary
+set list
+set listchars=eol:$,tab:>-,trail:_,extends:>,precedes:<
+set backspace=indent,eol,start
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+set expandtab
+set spell
+set completeopt+=preview
+set completeopt+=menuone
+set completeopt+=longest
+"""" End misc section
+
+"""" Keyboard shortcuts section
+"" Change leader key
+let mapleader = " "
+"" Visual indication of leader key timeout
+set showcmd
+"" Copy and paste
+vnoremap <C-c> "+yi
+vnoremap <C-x> "+c
+vnoremap <S-Insert> c<ESC>"+p
+inoremap <S-Insert> <ESC>"+pa
+"" Map Ctrl-Del to delete word
+inoremap <C-Delete> <ESC>dwi
+"" Use ESC to exit insert mode in :term
+" tnoremap <Esc> <C-\><C-n>
+"" Tab to autocomplete if in middle of line
+function! InsertTabWrapper()
+	let col = col('.') - 1
+	if !col || getline('.')[col - 1] !~ '\k'
+		return "\<tab>"
+	else
+		return "\<c-n>"
+	endif
+endfunction
+inoremap <expr> <tab> InsertTabWrapper()
+inoremap <s-tab> <c-p>"
+"" Expand CR when auto-completing pairs
+let g:delimitMate_expand_cr = 2
+let g:delimitMate_expand_space = 1
+let g:delimitMate_expand_inside_quotes = 1
+let g:delimitMate_jump_expansion = 1
+"" Toggle NERDTree
+map <Leader>f :NERDTreeToggle<CR>
+nnoremap <silent> <Leader>v :NERDTreeFind<CR>
+"" Delete buffer without messing layout
+nnoremap <Leader>x :Bd<CR>
+"" Quickly switch between buffers
+"nmap <Leader>1 <Plug>lightline#bufferline#go(1)
+"nmap <Leader>2 <Plug>lightline#bufferline#go(2)
+"nmap <Leader>3 <Plug>lightline#bufferline#go(3)
+"nmap <Leader>4 <Plug>lightline#bufferline#go(4)
+"nmap <Leader>5 <Plug>lightline#bufferline#go(5)
+"nmap <Leader>6 <Plug>lightline#bufferline#go(6)
+"nmap <Leader>7 <Plug>lightline#bufferline#go(7)
+"nmap <Leader>8 <Plug>lightline#bufferline#go(8)
+"nmap <Leader>9 <Plug>lightline#bufferline#go(9)
+"nmap <Leader>0 <Plug>lightline#bufferline#go(10)
+"" Key mapping for navigating between errors
+nnoremap <silent> <C-k> <Plug>(ale_previous_wrap)
+nnoremap <silent> <C-j> <Plug>(ale_next_wrap)
+"" Key mapping for IDE-like behaviour
+nnoremap <silent> K :ALEHover<CR>
+nnoremap <silent> gd :ALEGoToDefinition<CR>
+nnoremap <silent> gr :ALEFindReferences<CR>
+"""" End keyboard shortcuts section
+
+"""" Indentation config section
+autocmd FileType xml setlocal shiftwidth=2 tabstop=2 expandtab
+autocmd FileType json setlocal shiftwidth=2 tabstop=2 expandtab
+"""" End indentation config section
+
+"""" Directory tree browser section
+" let NERDTreeQuitOnOpen = 1
+let NERDTreeAutoDeleteBuffer = 1
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
+"""" End directory tree browser section
+
+"""" Statusline/tabline section
+let g:lightline = {
+            \ 'colorscheme': 'seoul256',
+            \ }
+let g:lightline.enable = {
+            \ 'statusline': 1,
+            \ 'tabline': 1
+            \ }
+" let g:lightline.separator = {
+"             \ 'left': '', 'right': ''
+"             \ }
+" let g:lightline.subseparator = {
+"             \ 'left': '', 'right': ''
+"             \ }
+function! LightLinePercent()
+    if &ft !=? 'nerdtree'
+        return line('.') * 100 / line('$') . '%'
+    else
+        return ''
     endif
-  endfunction
-  au! QuitPre * call ToStartify()
-  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-  autocmd BufWritePost *.scala :EnTypeCheck
-  cd $HOME
-  au BufRead,BufNewFile,BufEnter \@!(term://)* cd %:p:h
-  au! BufWritePost * Neomake
-  autocmd FileType json set nocursorcolumn
+endfunction
+function! LightLineLineInfo()
+    if &ft !=? 'nerdtree'
+        return line('.').':'. col('.')
+    else
+        return ''
+    endif
+endfunction
+function! Filetype()
+    " return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
+    return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype : 'no ft') : ''
+endfunction
+
+function! Fileformat()
+    " return winwidth(0) > 70 ? (&fileformat . ' ' . WebDevIconsGetFileFormatSymbol()) : ''
+    return winwidth(0) > 70 ? (&fileformat) : ''
+endfunction
+"let g:lightline.component_expand = {
+"            \ 'buffers': 'lightline#bufferline#buffers',
+"            \ 'linter_checking': 'lightline#ale#checking',
+"            \ 'linter_warnings': 'lightline#ale#warnings',
+"            \ 'linter_errors': 'lightline#ale#errors',
+"            \ 'linter_ok': 'lightline#ale#ok',
+"            \ }
+"let g:lightline.component_type = {
+"            \ 'buffers': 'tabsel',
+"            \ 'linter_checking': 'left',
+"            \ 'linter_warnings': 'warning',
+"            \ 'linter_errors': 'error',
+"            \ 'linter_ok': 'left',
+"            \ }
+let g:lightline.component_expand = {
+            \ 'linter_checking': 'lightline#ale#checking',
+            \ 'linter_warnings': 'lightline#ale#warnings',
+            \ 'linter_errors': 'lightline#ale#errors',
+            \ 'linter_ok': 'lightline#ale#ok',
+            \ }
+let g:lightline.component_type = {
+            \ 'linter_checking': 'left',
+            \ 'linter_warnings': 'warning',
+            \ 'linter_errors': 'error',
+            \ 'linter_ok': 'left',
+            \ }
+let g:lightline.component_function = {
+            \ 'percent': 'LightLinePercent',
+            \ 'lineinfo': 'LightLineLineInfo',
+            \ 'filetype': 'Filetype',
+            \ 'fileformat': 'Fileformat',
+            \ }
+"" Statusline
+set noshowmode
+let g:lightline.active = {
+            \   'right': 
+            \       [
+            \           [ 'lineinfo' ],
+            \           [ 'percent' ],
+            \           [
+            \               'linter_checking',
+            \               'linter_errors',
+            \               'linter_warnings',
+            \               'linter_ok',
+            \           ],
+            \       ],
+            \}
+"" Tabline
+set showtabline=2
+" let g:lightline#bufferline#enable_devicons = 0
+" let g:lightline#bufferline#unicode_symbols = 1
+" let g:lightline#bufferline#show_number = 0
+" let g:lightline#bufferline#number_map = {
+"             \ 0: '⁰', 1: '¹', 2: '²',
+"             \ 3: '³', 4: '⁴', 5: '⁵',
+"             \ 6: '⁶', 7: '⁷', 8: '⁸',
+"             \ 9: '⁹'}
+let g:lightline.tabline = {
+            \ 'right': [
+            \   ['close'],
+            \   ['fileformat',
+            \    'fileencoding',
+            \    'filetype'],
+            \ ]}
+"" Linting options
+" let g:lightline#ale#indicator_checking = "\uf110"
+" let g:lightline#ale#indicator_warnings = "\uf071"
+" let g:lightline#ale#indicator_errors = "\uf05e"
+" let g:lightline#ale#indicator_ok = "\uf00c"
+let g:lightline#ale#indicator_checking = "≒"
+let g:lightline#ale#indicator_warnings = "¡"
+let g:lightline#ale#indicator_errors = "※"
+let g:lightline#ale#indicator_ok = "●"
+"""" End status line section
+
+"""" Linting section
+" Keep the sign gutter open at all times
+let g:ale_sign_column_always = 1
+let g:ale_sign_error = 'X'
+let g:ale_sign_warning = 'i'
+" Lint on text change
+"let g:ale_lint_on_text_changed = 'never'
+"let g:ale_lint_on_text_changed = 'normal'
+" Lint on opening a file
+let g:ale_lint_on_enter = 0
+" Fix files when you saving
+let g:ale_fix_on_save = 0
+" Show 3 lines of errors (default: 10)
+let g:ale_list_window_size = 3
+"" Explicitly enable linters
+let g:ale_linters = {   'python': [
+            \               'pyls',
+            \               'flake8',
+            \               'mypy',
+            \               'prospector',
+            \               'pycodestyle',
+            \               'pyflakes',
+            \               'pylint',
+            \               'pyre',
+            \               'vulture',
+            \           ],
+            \       }
+"" Explicitly enable fixers
+let g:ale_fixers = {    'python': [
+            \               'add_blank_lines_for_python_control_statements',
+            \               'autopep8',
+            \               'black',
+            \               'isort',
+            \               'yapf',
+            \           ],
+            \           '*': [
+            \                   'remove_trailing_lines',
+            \                   'trim_whitespace',
+            \           ],
+            \      }
+"""" End linting section
+
+"""" Load external config per project
+" exrc allows loading local executing local rc files.
+set exrc

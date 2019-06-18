@@ -17,6 +17,19 @@ removeContainer() {
     docker rm -vf $containerId
 }
 
+createExrcFile() {
+    # Create .exrc inside the WORKSPACE to load the project lib
+    # Assume that lib is in lib*, python* and util*
+    file="$WORKSPACE/.exrc"
+    rm -f $file
+    pattern="lib python util"
+    for e in $pattern; do
+        for dir in `find $WORKSPACE -type d -name $e*`; do
+            echo -e "set path+=\"$WORKSPACE/$dir/**\"" >> $file
+        done
+    done
+}
+
 while getopts ":wh" OPTION; do
     case ${OPTION} in
     w)
@@ -36,4 +49,6 @@ IMAGENAME="ubuntu-nvim-${USER}"
 
 containerId=$(docker run --rm -d -it --user ${USER} --privileged -v $WORKSPACE:$WORKSPACE $IMAGENAME /bin/bash)
 
-docker exec -it $containerId nvim +NERDTree
+createExrcFile
+
+docker exec -it $containerId /bin/bash -c "export PATH=\"$HOME/.local/bin:$PATH\"; nvim +NERDTree"
