@@ -26,6 +26,7 @@ RUN apt update && \
 ADD to-add/init.vim /home/${user}/.config/nvim
 #ADD to-add/.gitconfig /home/${user}/.gitconfig
 ADD to-add/setup_nvim.sh /home/${user}/setup_nvim.sh
+ADD to-add/py_plugin.requirements /home/${user}/py_plugin.requirements
 
 # Install Plugin in nvim
 RUN chown -R ${user}:${group} /home/${user}/

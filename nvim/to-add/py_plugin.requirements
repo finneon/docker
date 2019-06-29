@@ -1,0 +1,9 @@
+python_language_server
+neovim
+pynvim
+jedi
+flake8
+autopep8
+editorconfig
+pylint
+bandit
