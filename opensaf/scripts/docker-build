@@ -14,9 +14,10 @@
 # This script supports the first way
 # TODO: The second one
 #
-# Notes: For the first way, this script compile and install opensaf source code on the host,
+# Notes: For the first way, this script compiles and installs opensaf source code on the host,
 #        the python version of the host and container image must be aligned so that pyOsaf
 #        works well eg. /usr/local/lib/python2.7/dist-packages/pyosaf
+#        Use update-alternatives --set python /usr/bin/python3.6 later to change python version
 
 # WORKSPACE is ~/docker/opensaf
 WORKSPACE=$(pwd)
@@ -64,27 +65,37 @@ ADD  to-add/opensaf_scale_out /usr/local/lib/opensaf/opensaf_scale_out
 ADD  to-add/scale-in-opensaf.py /usr/local/lib/opensaf/scale-in-opensaf.py
 ADD  to-add/scale-out-opensaf.py /usr/local/lib/opensaf/scale-out-opensaf.py
 ADD  to-add/osafclm_stop /usr/local/lib/opensaf/clm-scripts/osafclm_stop
+ADD  to-add/echo_server.py /usr/local/lib/opensaf/echo_server.py
 
-RUN  chmod +x /usr/local/bin/setup-opensaf-node && \
-     chmod +x /usr/local/lib/opensaf/opensaf_scale_out && \
-     chmod +x /usr/local/lib/opensaf/scale-out-opensaf.py && \
-     chmod +x /usr/local/lib/opensaf/scale-in-opensaf.py && \
-     chmod +x /usr/local/lib/opensaf/clm-scripts/osafclm_stop && \
-     groupadd opensaf && \
-     useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
-     echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \
-     echo 'Defaults:%opensaf !requiretty' >> /etc/sudoers && \
-     echo 'Defaults:opensaf !requiretty' >> /etc/sudoers && \
-     chown opensaf:opensaf /var/lib/opensaf && \
-     chown opensaf:opensaf /var/run/opensaf && \
-     chown -R opensaf:opensaf /var/log/opensaf && \
-     chown -R opensaf:opensaf /etc/opensaf && \
-     chown -R opensaf:opensaf /usr/local/bin/setup-opensaf-node && \
-     chown -R opensaf:opensaf /usr/local/lib/opensaf/opensaf_scale_out && \
-     sed '/\. \/lib\/lsb\/init-functions/ a\\/usr\/local\/bin\/setup-opensaf-node' -i /etc/init.d/opensafd && \
-     sed -i 's/#export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=0/export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=1/' /etc/opensaf/nid.conf && \
-     ln -s /lib/systemd/system/opensafd.service /etc/systemd/system/multi-user.target.wants/opensafd.service && \
-     echo "root:rootroot" | chpasswd
+# Set execute mode for scripts
+RUN  chmod +x /usr/local/bin/setup-opensaf-node && \\
+     chmod +x /usr/local/lib/opensaf/opensaf_scale_out && \\
+     chmod +x /usr/local/lib/opensaf/scale-out-opensaf.py && \\
+     chmod +x /usr/local/lib/opensaf/scale-in-opensaf.py && \\
+     chmod +x /usr/local/lib/opensaf/clm-scripts/osafclm_stop && \\
+     # Create opensaf group/user
+     groupadd opensaf && \\
+     useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \\
+     echo '%{opensaf_user} ALL = NOPASSWD: /sbin/reboot, /sbin/tipc-config, /usr/bin/pkill, /usr/bin/killall' >> /etc/sudoers && \\
+     echo 'Defaults:%opensaf !requiretty' >> /etc/sudoers && \\
+     echo 'Defaults:opensaf !requiretty' >> /etc/sudoers && \\
+     chown opensaf:opensaf /var/lib/opensaf && \\
+     chown opensaf:opensaf /var/run/opensaf && \\
+     chown -R opensaf:opensaf /var/log/opensaf && \\
+     chown -R opensaf:opensaf /etc/opensaf && \\
+     chown -R opensaf:opensaf /usr/local/bin/setup-opensaf-node && \\
+     chown -R opensaf:opensaf /usr/local/lib/opensaf/opensaf_scale_out && \\
+     # Setup start-up
+     sed '/\. \/lib\/lsb\/init-functions/ a\\/usr\/local\/bin\/setup-opensaf-node' -i /etc/init.d/opensafd && \\
+     sed -i 's/#export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=0/export OPENSAF_CLUSTERAUTO_SCALE_ENABLED=1/' /etc/opensaf/nid.conf && \\
+     ln -s /lib/systemd/system/opensafd.service /etc/systemd/system/multi-user.target.wants/opensafd.service && \\
+     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \\
+     echo "root:rootroot" | chpasswd && \\
+     # Provide alternative python version
+     # update-alternatives --set python /usr/bin/python3.6
+     update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \\
+     update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2 && \\
+     update-alternatives --set python /usr/bin/python2.7
 
 ENV container docker
 
@@ -106,8 +117,8 @@ function build_opensaf
 
 function usage {
 USAGE="Create opensaf-cluster image\n
-\t [-m | --make Build opensaf on the host\n
-\t [-r | --repo opensaf repo\n
+\t [-m | --make Build opensaf on the host, skip this if already compiled code\n
+\t [-r | --repo opensaf repo where contains source code\n
 \t [-h | --help Print usage
     "
     echo -e "$USAGE"

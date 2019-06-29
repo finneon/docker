@@ -235,7 +235,7 @@ def split_rdn_and_parent(immobj):
     if re.search("\\\\", immobj.new_dn) and re.search("safC.*Type=", immobj.new_dn):
         parent = immobj.new_dn.split(',', 2)[-1]
         rdn = re.sub(",{0}".format(parent), "", immobj.new_dn)
-        return rdn, parent
+    return rdn, parent
 
 
 def scale_out(new_hostname, from_hostname):
