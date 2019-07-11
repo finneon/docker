@@ -1,7 +1,13 @@
 ## Create Dockerfiles for creating opensaf cluster
 This project provides the way to create an opensaf-cluster image based on ubuntu and deploy the openSAF cluster container from that image. It also provide automatical scaling cluster eg. scale-out and scale-in. [openSAF source code](https://sourceforge.net/projects/opensaf/)
 
-### Build opensaf-cluster image
+### Build opensaf/ubuntu image for cluster base
+```
+cd docker/opensaf
+docker build --rm -t opensaf/ubuntu -f Dockerfile.ubuntu .
+```
+
+### Build opensaf-cluster image, it automatically clone the opensaf source code if the repo does not exist
 ```
 cd docker/opensaf
 ./scripts/docker-build -m -r ~/workspace/opensaf-code

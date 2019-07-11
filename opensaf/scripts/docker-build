@@ -45,7 +45,7 @@ function clone_opensaf_repo
 {
     if [ ! -d $REPO ]; then
         step "Clone opensaf repo"
-        git clone -b develop git://git.code.sf.net/p/opensaf/code opensaf-code
+        git clone -b develop git://git.code.sf.net/p/opensaf/code $REPO
     fi
 }
 
