@@ -26,6 +26,7 @@ redis:6379> get name
 "mark"
 redis:6379> get counter
 "2"
+```
 
 ### Python client for Redis key-value store
 ```
